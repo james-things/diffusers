@@ -277,15 +277,14 @@ def get_one_cycle_schedule(
     """
     Creates a OneCycleLR schedule with learning rate that varies according to the OneCycleLR 
     policy. This policy was initially described in the paper `Super-Convergence: Very Fast 
-    Training of Neural Networks Using Large Learning Rates`.
+    Training of Neural Networks Using Large Learning Rates` (https://arxiv.org/abs/1708.07120).
 
-    The learning rate starts from a small value, goes up to the base learning rate for the 
-    first third of the training steps, and then decreases to the base learning rate for the 
-    remaining two thirds of the training steps. Currently, default start and end points are 
-    calculated from the supplied learning rate, which is treated as the maximum learning rate.
+    The learning rate starts from a small initial value, gradually increases to the max learning rate 
+    across the first portion (default: 30%) of the training steps, and then gradually decreases to the 
+    base learning rate across the remaining steps.
 
-    There are many optional arguments which have been incorporated to allow flexible use. See
-    https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html for 
+    There are many optional arguments which have been incorporated to allow for flexible use. 
+    Please see https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html for 
     more information about this scheduler.
 
     Args:
