@@ -270,7 +270,7 @@ def get_polynomial_decay_schedule_with_warmup(
 
 
 def get_one_cycle_schedule(
-    optimizer: Optimizer, max_lr: float, num_training_steps: int, pct_start: float = 0.3, anneal_strategy: str ='cos',
+    optimizer: Optimizer, max_lr: float, num_training_steps: int, pct_start: float = 0.3, anneal_strategy: str = 'cos',
     cycle_momentum: bool = True, base_momentum: float = 0.85, max_momentum: float = 0.95, div_factor: float = 25.0,
     final_div_factor: float = 10000.0, three_phase: bool = False, last_epoch: int = -1, verbose: bool = False
 ):
@@ -318,7 +318,7 @@ def get_one_cycle_schedule(
             The index of the last epoch when resuming training. Default is -1, which means start from scratch.
         verbose (bool, optional):
             Specify whether the adjustment of the learning rate should be logged with each step.
-
+        
     Return:
         `torch.optim.lr_scheduler.OneCycleLR` with the appropriate schedule.
     """
@@ -351,6 +351,15 @@ def get_scheduler(
     num_cycles: int = 1,
     power: float = 1.0,
     last_epoch: int = -1,
+    pct_start: float = 0.3, 
+    anneal_strategy: str = 'cos',
+    cycle_momentum: bool = True, 
+    base_momentum: float = 0.85, 
+    max_momentum: float = 0.95, 
+    div_factor: float = 25.0,
+    final_div_factor: float = 10000.0, 
+    three_phase: bool = False, 
+    verbose: bool = False
 ):
     """
     Unified API to get any scheduler from its name.
@@ -374,6 +383,20 @@ def get_scheduler(
             Power factor. See `POLYNOMIAL` scheduler
         last_epoch (`int`, *optional*, defaults to -1):
             The index of the last epoch when resuming training.
+        pct_start: 
+            Starting percentage used in `ONE_CYCLE` scheduler.
+        anneal_strategy: 
+            Annealing strategy used in `ONE_CYCLE` scheduler.
+        cycle_momentum: 
+            Cycle momentum value used in `ONE_CYCLE` scheduler.
+        base_momentum: 
+            Base momentum value used in ONE_CYCLE scheduler.
+        max_momentum: 
+            Maximum momentum value used in ONE_CYCLE scheduler.
+        div_factor: 
+            Determines initial LR in OneCycleLR. See `ONE_CYCLE` scheduler.
+        final_div_factor: 
+            Determines final LR in OneCycleLR. See `ONE_CYCLE` scheduler.
     """
     name = SchedulerType(name)
     schedule_func = TYPE_TO_SCHEDULER_FUNCTION[name]
@@ -419,7 +442,20 @@ def get_scheduler(
         # Retrieve learning rate from optimizer
         max_lr = optimizer.param_groups[0]['lr']
         print(f"Initializing OneCycleLR with max learning rate: {max_lr}")
-        return schedule_func(optimizer, max_lr=max_lr, num_training_steps=num_training_steps)
+        return schedule_func(
+            optimizer, 
+            max_lr=max_lr, 
+            num_training_steps=num_training_steps,
+            pct_start=pct_start, 
+            anneal_strategy=anneal_strategy,
+            cycle_momentum=cycle_momentum, 
+            base_momentum=base_momentum, 
+            max_momentum=max_momentum, 
+            div_factor=div_factor,
+            final_div_factor=final_div_factor, 
+            three_phase=three_phase, 
+            verbose=verbose,
+        )
 
     return schedule_func(
         optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps, last_epoch=last_epoch
