@@ -269,7 +269,11 @@ def get_polynomial_decay_schedule_with_warmup(
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
 
-def get_one_cycle_schedule(optimizer: Optimizer, max_lr: float, num_training_steps: int, last_epoch: int = -1, verbose = False):
+def get_one_cycle_schedule(
+    optimizer: Optimizer, max_lr: float, num_training_steps: int, pct_start: float = 0.3, anneal_strategy: str ='cos',
+    cycle_momentum: bool = True, base_momentum: float = 0.85, max_momentum: float = 0.95, div_factor: float = 25.0,
+    final_div_factor: float = 10000.0, three_phase: bool = False, last_epoch: int = -1, verbose: bool = False
+):
     """
     Creates a OneCycleLR schedule with learning rate that varies according to the OneCycleLR 
     policy. This policy was initially described in the paper `Super-Convergence: Very Fast 
@@ -280,22 +284,50 @@ def get_one_cycle_schedule(optimizer: Optimizer, max_lr: float, num_training_ste
     remaining two thirds of the training steps. Currently, default start and end points are 
     calculated from the supplied learning rate, which is treated as the maximum learning rate.
 
+    There are many optional arguments which have been incorporated to allow flexible use. See
+    https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html for 
+    more information about this scheduler.
+
     Args:
         optimizer ([`~torch.optim.Optimizer`]):
             The optimizer for which to schedule the learning rate.
-        max_lr (float):
-            The peak/maxiumum learning rate specified for the cycle.
-        total_steps (int): 
+        max_lr (float or list):
+            The peak/maximum learning rate boundaries in the cycle for each parameter group.
+        num_training_steps (int): 
             The total number of training steps for the scheduler.
+        pct_start (float, optional):
+            The percentage of the cycle (in number of steps) spent increasing the learning rate. Default: 0.3
+        anneal_strategy (str, optional):
+            Specifies the annealing strategy: "cos" for cosine annealing, "linear" for linear annealing. Default: 'cos'
+        cycle_momentum (bool, optional):
+            If True, momentum is cycled inversely to learning rate between 'base_momentum' and 'max_momentum'. Default: True
+        base_momentum (float or list, optional):
+            Lower momentum boundaries in the cycle for each parameter group. Note that momentum is cycled inversely to learning rate; 
+            at the peak of a cycle, momentum is 'base_momentum' and learning rate is 'max_lr'. Default: 0.85
+        max_momentum (float or list, optional):
+            Upper momentum boundaries in the cycle for each parameter group. Functionally, it defines the cycle amplitude (max_momentum - base_momentum).
+            Note that momentum is cycled inversely to learning rate; at the start of a cycle, momentum is 'max_momentum' and learning rate is 'base_lr'. Default: 0.95
+        div_factor (float, optional):
+            Determines the initial learning rate via initial_lr = max_lr / div_factor. Default: 25.0
+        final_div_factor (float, optional):
+            Determines the minimum learning rate via min_lr = initial_lr / final_div_factor. Default: 10000.0
+        three_phase (bool, optional):
+            If True, use a third phase of the schedule to annihilate the learning rate according to 'final_div_factor' instead of modifying the second phase.
+            The first two phases will be symmetrical about the step indicated by 'pct_start'. Default: False
         last_epoch (int, optional): 
             The index of the last epoch when resuming training. Default is -1, which means start from scratch.
-        verbose (bool, optional)
-            Specify the adjustment of the learning rate to be logged with each step.
+        verbose (bool, optional):
+            Specify whether the adjustment of the learning rate should be logged with each step.
 
-    Returns:
+    Return:
         `torch.optim.lr_scheduler.OneCycleLR` with the appropriate schedule.
     """
-    return OneCycleLR(optimizer, max_lr, total_steps=num_training_steps, last_epoch=last_epoch, verbose=verbose)
+    return OneCycleLR(
+        optimizer, max_lr, total_steps=num_training_steps, last_epoch=last_epoch, pct_start=pct_start, 
+        anneal_strategy=anneal_strategy, cycle_momentum=cycle_momentum, base_momentum=base_momentum, 
+        max_momentum=max_momentum, div_factor=div_factor, final_div_factor=final_div_factor, three_phase=False, 
+        verbose=verbose
+    )
 
 
 TYPE_TO_SCHEDULER_FUNCTION = {
