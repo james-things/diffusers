@@ -405,6 +405,32 @@ def get_scheduler(
     if name == SchedulerType.PIECEWISE_CONSTANT:
         return schedule_func(optimizer, step_rules=step_rules, last_epoch=last_epoch)
 
+    # OneCycle requires `num_training_steps` and not `num_warmup_steps`.
+    if name == SchedulerType.ONE_CYCLE:
+        if num_warmup_steps is not None and not num_warmup_steps == 0:
+            print(f'{name} is not compatible with num_warmup_steps, which will be ignored.')
+        
+        # Retrieve learning rate from optimizer
+        max_lr = optimizer.param_groups[0]['lr']
+        print("Initializing OneCycleLR with the following parameters:\n" + 
+            f"max_lr: {max_lr}\n" + 
+            f"num_training_steps: {num_training_steps}")
+
+        return schedule_func(
+            optimizer, 
+            max_lr=max_lr, 
+            num_training_steps=num_training_steps,
+            pct_start=pct_start, 
+            anneal_strategy=anneal_strategy,
+            cycle_momentum=cycle_momentum, 
+            base_momentum=base_momentum, 
+            max_momentum=max_momentum, 
+            div_factor=div_factor,
+            final_div_factor=final_div_factor, 
+            three_phase=three_phase, 
+            verbose=verbose,
+        )
+
     # All other schedulers require `num_warmup_steps`
     if num_warmup_steps is None:
         raise ValueError(f"{name} requires `num_warmup_steps`, please provide that argument.")
@@ -434,27 +460,6 @@ def get_scheduler(
             last_epoch=last_epoch,
         )
 
-    # OneCycle requires `num_training_steps` and not `num_warmup_steps`.
-    if name == SchedulerType.ONE_CYCLE:
-        if num_warmup_steps is not None and not num_warmup_steps == 0:
-            raise ValueError(f'{name} is not compatible with num_warmup_steps, please set to 0.')
-        # Retrieve learning rate from optimizer
-        max_lr = optimizer.param_groups[0]['lr']
-        print(f"Initializing OneCycleLR with max learning rate: {max_lr}")
-        return schedule_func(
-            optimizer, 
-            max_lr=max_lr, 
-            num_training_steps=num_training_steps,
-            pct_start=pct_start, 
-            anneal_strategy=anneal_strategy,
-            cycle_momentum=cycle_momentum, 
-            base_momentum=base_momentum, 
-            max_momentum=max_momentum, 
-            div_factor=div_factor,
-            final_div_factor=final_div_factor, 
-            three_phase=three_phase, 
-            verbose=verbose,
-        )
 
     return schedule_func(
         optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps, last_epoch=last_epoch
