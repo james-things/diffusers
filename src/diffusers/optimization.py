@@ -19,7 +19,7 @@ from enum import Enum
 from typing import Optional, Union
 
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import LambdaLR
+from torch.optim.lr_scheduler import LambdaLR, OneCycleLR
 
 from .utils import logging
 
@@ -35,6 +35,7 @@ class SchedulerType(Enum):
     CONSTANT = "constant"
     CONSTANT_WITH_WARMUP = "constant_with_warmup"
     PIECEWISE_CONSTANT = "piecewise_constant"
+    ONE_CYCLE = "one_cycle"
 
 
 def get_constant_schedule(optimizer: Optimizer, last_epoch: int = -1):
@@ -268,6 +269,35 @@ def get_polynomial_decay_schedule_with_warmup(
     return LambdaLR(optimizer, lr_lambda, last_epoch)
 
 
+def get_one_cycle_schedule(optimizer: Optimizer, max_lr: float, num_training_steps: int, last_epoch: int = -1, verbose = False):
+    """
+    Creates a OneCycleLR schedule with learning rate that varies according to the OneCycleLR 
+    policy. This policy was initially described in the paper `Super-Convergence: Very Fast 
+    Training of Neural Networks Using Large Learning Rates`.
+
+    The learning rate starts from a small value, goes up to the base learning rate for the 
+    first third of the training steps, and then decreases to the base learning rate for the 
+    remaining two thirds of the training steps. Currently, default start and end points are 
+    calculated from the supplied learning rate, which is treated as the maximum learning rate.
+
+    Args:
+        optimizer ([`~torch.optim.Optimizer`]):
+            The optimizer for which to schedule the learning rate.
+        max_lr (float):
+            The peak/maxiumum learning rate specified for the cycle.
+        total_steps (int): 
+            The total number of training steps for the scheduler.
+        last_epoch (int, optional): 
+            The index of the last epoch when resuming training. Default is -1, which means start from scratch.
+        verbose (bool, optional)
+            Specify the adjustment of the learning rate to be logged with each step.
+
+    Returns:
+        `torch.optim.lr_scheduler.OneCycleLR` with the appropriate schedule.
+    """
+    return OneCycleLR(optimizer, max_lr, total_steps=num_training_steps, last_epoch=last_epoch, verbose=verbose)
+
+
 TYPE_TO_SCHEDULER_FUNCTION = {
     SchedulerType.LINEAR: get_linear_schedule_with_warmup,
     SchedulerType.COSINE: get_cosine_schedule_with_warmup,
@@ -276,6 +306,7 @@ TYPE_TO_SCHEDULER_FUNCTION = {
     SchedulerType.CONSTANT: get_constant_schedule,
     SchedulerType.CONSTANT_WITH_WARMUP: get_constant_schedule_with_warmup,
     SchedulerType.PIECEWISE_CONSTANT: get_piecewise_constant_schedule,
+    SchedulerType.ONE_CYCLE: get_one_cycle_schedule,
 }
 
 
@@ -348,6 +379,15 @@ def get_scheduler(
             power=power,
             last_epoch=last_epoch,
         )
+
+    # OneCycle requires `num_training_steps` and not `num_warmup_steps`.
+    if name == SchedulerType.ONE_CYCLE:
+        if num_warmup_steps is not None and not num_warmup_steps == 0:
+            raise ValueError(f'{name} is not compatible with num_warmup_steps, please set to 0.')
+        # Retrieve learning rate from optimizer
+        max_lr = optimizer.param_groups[0]['lr']
+        print(f"Initializing OneCycleLR with max learning rate: {max_lr}")
+        return schedule_func(optimizer, max_lr=max_lr, num_training_steps=num_training_steps)
 
     return schedule_func(
         optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps, last_epoch=last_epoch
