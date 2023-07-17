@@ -295,24 +295,31 @@ def get_one_cycle_schedule(
         num_training_steps (int): 
             The total number of training steps for the scheduler.
         pct_start (float, optional):
-            The percentage of the cycle (in number of steps) spent increasing the learning rate. Default: 0.3
+            The percentage of the cycle (in number of steps) spent increasing the learning rate. 
+            Default: 0.3
         anneal_strategy (str, optional):
-            Specifies the annealing strategy: "cos" for cosine annealing, "linear" for linear annealing. Default: 'cos'
+            Specifies the annealing strategy: "cos" for cosine annealing, "linear" for linear 
+            annealing. Default: 'cos'
         cycle_momentum (bool, optional):
-            If True, momentum is cycled inversely to learning rate between 'base_momentum' and 'max_momentum'. Default: True
+            If True, momentum is cycled inversely to learning rate between 'base_momentum' and 
+            'max_momentum'. Default: True
         base_momentum (float or list, optional):
-            Lower momentum boundaries in the cycle for each parameter group. Note that momentum is cycled inversely to learning rate; 
-            at the peak of a cycle, momentum is 'base_momentum' and learning rate is 'max_lr'. Default: 0.85
+            Lower momentum boundaries in the cycle for each parameter group. Note that momentum is 
+            cycled inversely to learning rate; at the peak of a cycle, momentum is 'base_momentum' and 
+            learning rate is 'max_lr'. Default: 0.85
         max_momentum (float or list, optional):
-            Upper momentum boundaries in the cycle for each parameter group. Functionally, it defines the cycle amplitude (max_momentum - base_momentum).
-            Note that momentum is cycled inversely to learning rate; at the start of a cycle, momentum is 'max_momentum' and learning rate is 'base_lr'. Default: 0.95
+            Upper momentum boundaries in the cycle for each parameter group. Functionally, it defines 
+            the cycle amplitude (max_momentum - base_momentum). Note that momentum is cycled inversely 
+            to learning rate; at the start of a cycle, momentum is 'max_momentum' and learning rate is 
+            'base_lr'. Default: 0.95
         div_factor (float, optional):
             Determines the initial learning rate via initial_lr = max_lr / div_factor. Default: 25.0
         final_div_factor (float, optional):
             Determines the minimum learning rate via min_lr = initial_lr / final_div_factor. Default: 10000.0
         three_phase (bool, optional):
-            If True, use a third phase of the schedule to annihilate the learning rate according to 'final_div_factor' instead of modifying the second phase.
-            The first two phases will be symmetrical about the step indicated by 'pct_start'. Default: False
+            If True, use a third phase of the schedule to annihilate the learning rate according to 
+            'final_div_factor' instead of modifying the second phase. The first two phases will be symmetrical 
+            about the step indicated by 'pct_start'. Default: False
         last_epoch (int, optional): 
             The index of the last epoch when resuming training. Default is -1, which means start from scratch.
         verbose (bool, optional):
@@ -324,7 +331,7 @@ def get_one_cycle_schedule(
     return OneCycleLR(
         optimizer, max_lr, total_steps=num_training_steps, last_epoch=last_epoch, pct_start=pct_start, 
         anneal_strategy=anneal_strategy, cycle_momentum=cycle_momentum, base_momentum=base_momentum, 
-        max_momentum=max_momentum, div_factor=div_factor, final_div_factor=final_div_factor, three_phase=False, 
+        max_momentum=max_momentum, div_factor=div_factor, final_div_factor=final_div_factor, three_phase=three_phase, 
         verbose=verbose
     )
 
