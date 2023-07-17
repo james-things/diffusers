@@ -384,9 +384,9 @@ def get_scheduler(
         last_epoch (`int`, *optional*, defaults to -1):
             The index of the last epoch when resuming training.
         pct_start: 
-            Starting percentage used in `ONE_CYCLE` scheduler.
+            Percentage of increasing steps before reaching max lr used in `ONE_CYCLE` scheduler.
         anneal_strategy: 
-            Annealing strategy used in `ONE_CYCLE` scheduler.
+            Annealing strategy used in OneCycleLR. See `ONE_CYCLE` scheduler.
         cycle_momentum: 
             Cycle momentum value used in `ONE_CYCLE` scheduler.
         base_momentum: 
