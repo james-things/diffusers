@@ -416,13 +416,11 @@ def get_scheduler(
     if name == SchedulerType.ONE_CYCLE:
         if num_warmup_steps is not None and not num_warmup_steps == 0:
             print(f'{name} is not compatible with num_warmup_steps, which will be ignored.')
+        if num_training_steps is None:
+            raise ValueError(f'{name} requires num_training_steps, please provide that argument.')
         
         # Retrieve learning rate from optimizer
         max_lr = optimizer.param_groups[0]['lr']
-        print("Initializing OneCycleLR with the following parameters:\n" + 
-            f"max_lr: {max_lr}\n" + 
-            f"num_training_steps: {num_training_steps}")
-
         return schedule_func(
             optimizer, 
             max_lr=max_lr, 
