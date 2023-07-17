@@ -382,20 +382,20 @@ def get_scheduler(
             Power factor. See `POLYNOMIAL` scheduler
         last_epoch (`int`, *optional*, defaults to -1):
             The index of the last epoch when resuming training.
-        pct_start: 
-            Percentage of increasing steps before reaching max lr used in `ONE_CYCLE` scheduler.
-        anneal_strategy: 
-            Annealing strategy used in OneCycleLR. See `ONE_CYCLE` scheduler.
-        cycle_momentum: 
+        pct_start (`float`, *optional*, defaults to 0.3): 
+            Percentage of total steps to take to reach max lr in `ONE_CYCLE` scheduler.
+        anneal_strategy (`str`, *optional*, defaults to "cos"): 
+            Annealing strategy used in `ONE_CYCLE` scheduler.
+        cycle_momentum (`bool`, *optional*, defaults to True): 
             Cycle momentum value used in `ONE_CYCLE` scheduler.
-        base_momentum: 
+        base_momentum (`float`, *optional*, defaults to 0.85): 
             Base momentum value used in ONE_CYCLE scheduler.
-        max_momentum: 
+        max_momentum (`float`, *optional*, defaults to 0.95): 
             Maximum momentum value used in ONE_CYCLE scheduler.
-        div_factor: 
-            Determines initial LR in OneCycleLR. See `ONE_CYCLE` scheduler.
-        final_div_factor: 
-            Determines final LR in OneCycleLR. See `ONE_CYCLE` scheduler.
+        div_factor (`float`, *optional*, defaults to 25.0): 
+            Determines initial LR used by ONE_CYCLE scheduler.
+        final_div_factor (`float`, *optional*, defaults to 10000.0): 
+            Determines final LR in ONE_CYCLE scheduler.
     """
     name = SchedulerType(name)
     schedule_func = TYPE_TO_SCHEDULER_FUNCTION[name]
