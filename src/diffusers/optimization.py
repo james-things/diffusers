@@ -351,15 +351,15 @@ def get_scheduler(
     num_cycles: int = 1,
     power: float = 1.0,
     last_epoch: int = -1,
-    pct_start: float = 0.3, 
-    anneal_strategy: str = 'cos',
-    cycle_momentum: bool = True, 
-    base_momentum: float = 0.85, 
-    max_momentum: float = 0.95, 
-    div_factor: float = 25.0,
-    final_div_factor: float = 10000.0, 
-    three_phase: bool = False, 
-    verbose: bool = False
+    pct_start: Optional[float] = 0.3, 
+    anneal_strategy: Optional[str] = 'cos',
+    cycle_momentum: Optional[bool] = True, 
+    base_momentum: Optional[float] = 0.85, 
+    max_momentum: Optional[float] = 0.95, 
+    div_factor: Optional[float] = 25.0,
+    final_div_factor: Optional[float] = 10000.0, 
+    three_phase: Optional[bool] = False, 
+    verbose: Optional[bool] = False
 ):
     """
     Unified API to get any scheduler from its name.
